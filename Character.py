@@ -1,17 +1,15 @@
 import pygame
 from Engine import Vector, Transform, Controller
+from GameObject import GameObject
 
 
-class Character:
-    def __init__(self, screen, cords, speed):
-        self.scale = 3
-        self.screen = screen
-        self.sprite = pygame.transform.scale(pygame.image.load('character.png').convert_alpha(), (
-            pygame.image.load('character.png').convert_alpha().get_width() * self.scale,
-            pygame.image.load('character.png').convert_alpha().get_height() * self.scale))
+class Character(GameObject):
+    def __init__(self, cords, speed, screen, camera):
+        super().__init__(cords, 'character.png', scale=3)
         self.controller = Controller()
-        self.transform = Transform(cords)
+        self.screen = screen
         self.speed = speed
+        self.camera = camera
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -24,14 +22,12 @@ class Character:
             y = 1
         if keys[self.controller.up]:
             y = -1
+        vector = Vector((x, y))
         if x and y:
-            vector = Vector((x, y))
             normalized_vector = vector.normalize()
-            self.transform.xpos += normalized_vector.x * self.speed
-            self.transform.ypos += normalized_vector.y * self.speed
+            self.camera.offset += Vector((normalized_vector.x * self.speed, normalized_vector.y * self.speed))
         else:
-            self.transform.xpos += x * self.speed
-            self.transform.ypos += y * self.speed
+            self.camera.offset += Vector((x * self.speed, y * self.speed))
 
     def update_frame(self):
         self.move()

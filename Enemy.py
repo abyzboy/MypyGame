@@ -1,23 +1,20 @@
-import pygame
+from GameObject import GameObject
 from Engine import Transform, Vector
 
 
-class Enemy:
-    def __init__(self, screen, cords, target, speed):
-        self.screen = screen
-        self.transform = Transform(cords)
+class Enemy(GameObject):
+    def __init__(self, cords, target, speed, screen):
+        super().__init__(cords, 'enemy.png', scale=3)
         self.can_walk = True
         self.speed = speed
         self.target = target
-        self.surface = pygame.Surface((50, 50), pygame.SRCALPHA)
-        self.surface.fill((0, 0, 0, 0))
-        pygame.draw.circle(self.surface, 'red', (25, 25), 25)
+        self.screen = screen
 
     def update_frame(self):
-        if int(self.transform.dist(self.target.transform)) < 50:
+        vector = self.target.camera.offset + self.target.transform.vector
+        if int(self.transform.dist(vector)) < 50:
             self.can_walk = False
-        if int(self.transform.dist(self.target.transform)) > 70:
-            self.can_walk = True
+        elif int(self.transform.dist(self.target.camera.offset + self.target.transform.vector)) > 70:
+            pass
         if self.can_walk:
-            self.transform.goto(self.target.transform, self.speed)
-        self.screen.blit(self.surface, self.transform.positions())
+            self.transform.goto(self.target.camera.offset + self.target.transform.vector, self.speed)

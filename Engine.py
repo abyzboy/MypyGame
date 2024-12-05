@@ -12,36 +12,33 @@ class Vector:
     def normalize(self):
         return Vector((self.x / self.len_vector(), self.y / self.len_vector()))
 
+    def get_cords(self):
+        return self.x, self.y
+
+    def __add__(self, other):
+        if type(other) == Vector:
+            return Vector((self.x + other.x, self.y + other.y))
+
+    def __sub__(self, other):
+        if type(other) == Vector:
+            return Vector((self.x - other.x, self.y - other.y))
+
 
 class Transform:
-    def __init__(self, coords=(0, 0)):
-        self.xpos = coords[0]
-        self.ypos = coords[1]
-
-    def right(self):
-        self.xpos += 1
+    def __init__(self, cords=(0, 0)):
+        self.vector = Vector(cords)
 
     def dist(self, other):
-        return Vector((other.xpos - self.xpos, other.ypos - self.ypos)).len_vector()
-
-    def left(self):
-        self.xpos -= 1
-
-    def down(self):
-        self.ypos += 1
-
-    def up(self):
-        self.ypos -= 1
+        if type(other) == Vector:
+            return (other - self.vector).len_vector()
 
     def positions(self):
-        return self.xpos, self.ypos
+        return self.vector.get_cords()
 
     def goto(self, other, speed=1):
-        x, y = self.positions()
-        other_x, other_y = other.positions()
-        vector = Vector(((other_x - x), other_y - y))
-        self.xpos += vector.normalize().x * speed
-        self.ypos += vector.normalize().y * speed
+        vector = other - self.vector
+        self.vector.x += vector.normalize().x * speed
+        self.vector.y += vector.normalize().y * speed
 
 
 class Controller:

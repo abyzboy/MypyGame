@@ -1,8 +1,10 @@
 import pygame
-from PIL import Image
+
+from Camera import Camera
 from Engine import Controller
 from Character import Character
 from Enemy import Enemy
+from StaticObject import StaticObject
 
 if __name__ == "__main__":
     pygame.init()
@@ -12,17 +14,23 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     fps = 60
     running = True
-    controller = Controller()
-    character = Character(screen, (100, 100), 10)
-    enemy = Enemy(screen, (250, 20), character, 5)
-    print(controller.right)
+    camera = Camera(screen)
+    character = Character((400, 300), 3, screen, camera)
+
+    ground = StaticObject((0, 0), '1.png')
+    enemy = Enemy((250, 20), character, 2, screen)
+    objects = [ground, enemy]
+
+    camera.add_objects(*objects)
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill('green')
-        enemy.update_frame()
+        camera.draw_objects()
         character.update_frame()
+        enemy.update_frame()
         clock.tick(fps)
         pygame.display.flip()
     pygame.quit()
