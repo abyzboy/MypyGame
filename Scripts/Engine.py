@@ -23,6 +23,18 @@ class Vector:
         if type(other) == Vector:
             return Vector((self.x - other.x, self.y - other.y))
 
+    def __le__(self, other):
+        if self.x <= other.x and self.y <= other.y:
+            return True
+        else:
+            return False
+
+    def __ge__(self, other):
+        if self.x >= other.x and self.y >= other.y:
+            return True
+        else:
+            return False
+
 
 class Transform:
     def __init__(self, cords=(0, 0)):

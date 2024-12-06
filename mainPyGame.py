@@ -13,9 +13,8 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     fps = 60
     running = True
-    camera = Camera(screen)
-    character = Character((400, 300), 3, screen, camera)
-
+    character = Character((400, 300), 3, screen)
+    camera = Camera(screen, character)
     ground = StaticObject((0, 0), '1.png')
     enemy = Enemy((250, 20), character, 2, screen)
     objects = [ground, enemy]
@@ -30,6 +29,7 @@ if __name__ == "__main__":
         camera.draw_objects()
         character.update_frame()
         enemy.update_frame()
+        character.update_collision(objects)
         clock.tick(fps)
         pygame.display.flip()
     pygame.quit()
