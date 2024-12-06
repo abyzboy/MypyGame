@@ -1,11 +1,11 @@
 import pygame
-from Engine import Vector, Transform, Controller
-from GameObject import GameObject
+from Scripts.Engine import Vector, Controller
+from Scripts.GameObjects.GameObject import GameObject
 
 
 class Character(GameObject):
     def __init__(self, cords, speed, screen, camera):
-        super().__init__(cords, 'character.png', scale=3)
+        super().__init__(cords, '../../character.png', scale=3)
         self.controller = Controller()
         self.screen = screen
         self.speed = speed

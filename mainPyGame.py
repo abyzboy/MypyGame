@@ -1,10 +1,9 @@
 import pygame
 
-from Camera import Camera
-from Engine import Controller
-from Character import Character
-from Enemy import Enemy
-from StaticObject import StaticObject
+from Scripts.Camera import Camera
+from Scripts.GameObjects.Character import Character
+from Scripts.GameObjects.Enemy import Enemy
+from Scripts.GameObjects.StaticObject import StaticObject
 
 if __name__ == "__main__":
     pygame.init()

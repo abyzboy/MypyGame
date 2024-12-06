@@ -1,10 +1,9 @@
 from GameObject import GameObject
-from Engine import Transform, Vector
 
 
 class Enemy(GameObject):
     def __init__(self, cords, target, speed, screen):
-        super().__init__(cords, 'enemy.png', scale=3)
+        super().__init__(cords, '../../enemy.png', scale=3)
         self.can_walk = True
         self.speed = speed
         self.target = target

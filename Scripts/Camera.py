@@ -1,6 +1,6 @@
-from Engine import Transform, Vector
+from Scripts.Engine import Vector
 import pygame
-from GameObject import GameObject
+from Scripts.GameObjects.GameObject import GameObject
 
 
 class Camera:

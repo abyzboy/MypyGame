@@ -1,7 +1,4 @@
-import pygame.image
-
-from Engine import Transform, Controller
-from GameObject import GameObject
+from Scripts.GameObjects.GameObject import GameObject
 
 
 class StaticObject(GameObject):
