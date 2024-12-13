@@ -19,8 +19,8 @@ class Character(GameObject):
             if game_object.tag_collision == 'enemy':
                 collider_vectors = (Vector(self.collision_fire[0]) + self.transform.vector - Vector((175, 175)),
                                     Vector(self.collision_fire[1]) + self.transform.vector - Vector((175, 175)))
-                if collider_vectors[0] <= game_object.transform.vector and game_object.transform.vector <= \
-                        collider_vectors[1]:
+                if (collider_vectors[0] <= game_object.transform.vector) and (game_object.transform.vector <= \
+                        collider_vectors[1]):
                     print('hey')
 
     def draw_collision(self, offset):
