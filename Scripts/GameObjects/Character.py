@@ -1,32 +1,34 @@
 import pygame
-from Scripts.Engine import Vector, Controller
+from Scripts.Engine import Vector, Controller, Collider
 from Scripts.GameObjects.GameObject import GameObject
+from Scripts.bullet import Bullet
 
 
 class Character(GameObject):
     def __init__(self, cords, speed, screen):
-        super().__init__(cords, 'character.png', scale=3)
+        super().__init__(cords, 'character.png', scale=3, tag_collision='character')
         self.controller = Controller()
         self.screen = screen
         self.speed = speed
-        self.collision_fire = ((0, 0), (400, 400))
-        self.surface = pygame.Surface((400, 400), pygame.SRCALPHA)
-        self.surface.fill((0, 0, 0, 0))
-        self.surface.set_alpha(50)
+        self.collider = Collider((500, 500), self.transform, offset=(-225, -225))
+        self.targets = []
+        self.camera = None
 
     def update_collision(self, objects: list[GameObject]):
+        self.targets = []
         for game_object in objects:
             if game_object.tag_collision == 'enemy':
-                collider_vectors = (Vector(self.collision_fire[0]) + self.transform.vector - Vector((175, 175)),
-                                    Vector(self.collision_fire[1]) + self.transform.vector - Vector((175, 175)))
-                if (collider_vectors[0] <= game_object.transform.vector) and (game_object.transform.vector <= \
-                        collider_vectors[1]):
-                    print('hey')
+                if self.collider.on_collider_stay(game_object.collider):
+                    self.targets.append(game_object)
 
     def draw_collision(self, offset):
-        x, y = self.sprite.get_size()
         pygame.draw.rect(self.surface, 'white', self.collision_fire)
-        self.screen.blit(self.surface, (self.transform.vector - offset - Vector((175, 175))).get_cords())
+        self.screen.blit(self.surface, (self.transform.vector - offset - Vector((300, 300))).get_cords())
+
+    def create_bullet(self):
+        if self.targets:
+            bullet = Bullet(self.transform.vector.get_cords(), self.targets[0])
+            self.camera.add_objects(bullet)
 
     def move(self):
         keys = pygame.key.get_pressed()
