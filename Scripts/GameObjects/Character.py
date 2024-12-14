@@ -20,8 +20,8 @@ class Character(GameObject):
         self.targets = []
         for game_object in objects:
             if game_object.tag_collision == 'enemy':
-                # if self.collider_area_attack.on_collider_stay(game_object.collider):
-                # self.targets.append(game_object)
+                if self.collider_area_attack.on_collider_stay(game_object.collider):
+                    self.targets.append(game_object)
                 if self.collider_character.on_collider_stay(game_object.collider):
                     game_object.attack(self)
                     print(self.health)

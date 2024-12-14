@@ -1,10 +1,8 @@
 import pygame
-
 from Scripts.Camera import Camera
 from Scripts.GameObjects.Character import Character
 from Scripts.GameObjects.Enemy import Enemy
 from Scripts.GameObjects.StaticObject import StaticObject
-from Scripts.bullet import Bullet
 
 if __name__ == "__main__":
     pygame.init()
@@ -26,7 +24,7 @@ if __name__ == "__main__":
 
     reload_event = pygame.event.custom_type()
     clear_event_obj = pygame.event.custom_type()
-    pygame.time.set_timer(reload_event, 1000000)
+    pygame.time.set_timer(reload_event, 1000)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
