@@ -19,7 +19,10 @@ class Enemy(GameObject):
         for game_object in objects:
             if game_object.tag_collision == 'bullet':
                 if self.collider.on_collider_stay(game_object.collider):
-                    self.is_dead = True
+                    if self.health - game_object.damage <= 0:
+                        self.is_dead = True
+                    else:
+                        self.health -= game_object.damage
                     game_object.is_dead = True
 
     def update_frame(self):
