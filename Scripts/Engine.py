@@ -55,8 +55,9 @@ class Transform:
 
 
 class Collider:
-    def __init__(self, cord, transform, offset=(0, 0)):
+    def __init__(self, cord, transform, offset=(0, 0), tag='defualt'):
         self.transform = transform
+        self.tag =tag
         self.offset = Vector(offset)
         self.cord = Vector(cord)
         self.surface = Surface(cord)

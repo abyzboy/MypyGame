@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     reload_event = pygame.event.custom_type()
     clear_event_obj = pygame.event.custom_type()
-    pygame.time.set_timer(reload_event, 1000)
+    pygame.time.set_timer(reload_event, 1000000)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

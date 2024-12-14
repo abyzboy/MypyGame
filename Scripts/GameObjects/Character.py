@@ -9,8 +9,10 @@ class Character(GameObject):
         super().__init__(cords, 'character.png', scale=3, tag_collision='character')
         self.controller = Controller()
         self.screen = screen
+        self.health = 100
         self.speed = speed
-        self.collider = Collider((500, 500), self.transform, offset=(-225, -225))
+        self.collider_area_attack = Collider((500, 500), self.transform, offset=(-225, -225))
+        self.collider_character = Collider((80, 80), self.transform, offset=(-20, -20))
         self.targets = []
         self.camera = None
 
@@ -18,8 +20,11 @@ class Character(GameObject):
         self.targets = []
         for game_object in objects:
             if game_object.tag_collision == 'enemy':
-                if self.collider.on_collider_stay(game_object.collider):
-                    self.targets.append(game_object)
+                # if self.collider_area_attack.on_collider_stay(game_object.collider):
+                # self.targets.append(game_object)
+                if self.collider_character.on_collider_stay(game_object.collider):
+                    game_object.attack(self)
+                    print(self.health)
 
     def draw_collision(self, offset):
         pygame.draw.rect(self.surface, 'white', self.collision_fire)
