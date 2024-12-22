@@ -1,10 +1,10 @@
 from Scripts.Engine import Vector
 import pygame
 
-from Scripts.GameObjects.Character import Character
-from Scripts.GameObjects.Enemy import Enemy
-from Scripts.GameObjects.GameObject import GameObject
-from Scripts.bullet import Bullet
+from Scripts.GameObjects import Character
+from Scripts.GameObjects import Enemy
+from Scripts.GameObjects import GameObject
+from Scripts.GameObjects import Bullet
 
 
 class Camera:
