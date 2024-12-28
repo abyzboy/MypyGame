@@ -1,6 +1,8 @@
 import pygame
 from pygame import Surface
 
+FPS = 60
+
 
 class Vector:
     def __init__(self, cord):
@@ -57,7 +59,7 @@ class Transform:
 class Collider:
     def __init__(self, cord, transform, offset=(0, 0), tag='defualt'):
         self.transform = transform
-        self.tag =tag
+        self.tag = tag
         self.offset = Vector(offset)
         self.cord = Vector(cord)
         self.surface = Surface(cord)
@@ -87,3 +89,34 @@ class Controller:
     down = pygame.K_s
     right = pygame.K_d
     left = pygame.K_a
+
+
+def draw_text_with_outline(surface, text, font, position, text_color, outline_color, outline_thickness=1):
+    # Рисуем обводку
+
+    for dx in range(-outline_thickness, outline_thickness + 1):
+
+        for dy in range(-outline_thickness, outline_thickness + 1):
+
+            if abs(dx) + abs(dy) > outline_thickness:
+                continue
+
+            outline_position = (position[0] + dx, position[1] + dy)
+
+            surface.blit(font.render(text, True, outline_color), outline_position)
+
+    # Рисуем основной текст
+
+    surface.blit(font.render(text, True, text_color), position)
+
+    return font.render(text, True, text_color).get_height()
+
+
+def draw_multiline_text(surface, text, font, position, text_color, outline_color=(0, 0, 0), outline_thickness=0):
+    lines = text.split('\n')  # Разделяем текст на строки
+
+    y_offset = 0  # Смещение по вертикали
+
+    for line in lines:
+        y_offset += draw_text_with_outline(surface, line, font, (position[0], position[1] + y_offset), text_color,
+                                           outline_color, outline_thickness)

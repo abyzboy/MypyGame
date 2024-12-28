@@ -26,7 +26,7 @@ class GameObject:
         return self.tag_collision
 
 
-DURATION_BULLET = 0.5
+DURATION_BULLET = 1
 DURATION_GOLD_BULLET = 0.05
 DURATION_ICE_BULLET = 3
 
@@ -34,6 +34,12 @@ DURATION_ICE_BULLET = 3
 class Character(GameObject):
     def __init__(self, cords, speed, screen):
         super().__init__(cords, 'character.png', scale=3, tag_collision='character')
+        # damage bullets
+        self.damage_bullet = 10
+        self.damage_goldBullet = 15
+        self.damage_iceBullet = 5
+        self.cold_resist = 0.1
+
         self.controller = Controller()
         self.first_time = time.time()
         self.camera = None
@@ -42,11 +48,12 @@ class Character(GameObject):
         self.health = 100
         self.speed = speed
         self.exp = 0
+        self.level = 1
         # colliders
         self.collider_area_attack = Collider((500, 500), self.transform, offset=(-225, -225))
         self.collider_character = Collider((80, 80), self.transform, offset=(-20, -20))
         # buffs
-        self.gold_bullet = False
+        self.can_shoot_gold_bullet = False
 
         self.counter = 0
 
@@ -61,9 +68,9 @@ class Character(GameObject):
 
     def shoot(self, target):
         self.counter += 1
-        bullet = Bullet('bullet.png', self.transform.vector.get_cords(), target, damage=5)
+        bullet = Bullet('assets/bullets/bullet.png', self.transform.vector.get_cords(), target, self.damage_bullet)
         self.camera.add_objects(bullet)
-        if self.gold_bullet:
+        if self.can_shoot_gold_bullet:
             threading.Timer(DURATION_GOLD_BULLET, self.shoot_gold, args=[target]).start()
         if self.counter % DURATION_ICE_BULLET == 0 and self.counter >= DURATION_ICE_BULLET:
             threading.Timer(0.2, self.shoot_ice, args=[target]).start()
@@ -71,13 +78,15 @@ class Character(GameObject):
     def shoot_gold(self, target):
         target: Enemy = target
         if not target.is_dead:
-            bullet = Bullet('gold_bullet.png', self.transform.vector.get_cords(), target, damage=15)
+            bullet = Bullet('assets/bullets/gold_bullet.png', self.transform.vector.get_cords(), target,
+                            self.damage_goldBullet)
             self.camera.add_objects(bullet)
         return 0
 
     def shoot_ice(self, target):
         target: Enemy = target
-        bullet = IceBullet('ice_bullet.png', self.transform.vector.get_cords(), target, damage=25, ice_debuff=1)
+        bullet = IceBullet('assets/bullets/ice_bullet.png', self.transform.vector.get_cords(), target,
+                           self.damage_iceBullet, self.cold_resist)
         self.camera.add_objects(bullet)
 
     def check_reload(self, duration):
@@ -108,12 +117,16 @@ class Character(GameObject):
     def update_frame(self):
         self.move()
         if self.exp == 10:
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1))
+            self.level += 1
+            print('level up!')
+            if self.level == 2:
+                self.can_shoot_gold_bullet = True
             self.exp = 0
-            self.gold_bullet = True
 
 
 class Enemy(GameObject):
-    def __init__(self, cords, character: Character, screen, speed=1, health=100, id=0):
+    def __init__(self, image_path, cords, character: Character, screen, speed=1, health=100, id=0):
         super().__init__(cords, 'enemy.png', scale=3, tag_collision='enemy')
         self.health = health
         self.can_walk = True
@@ -135,14 +148,15 @@ class Enemy(GameObject):
             if game_object.tag_collision == 'bullet':
                 if self.collider.on_collider_stay(game_object.collider):
                     game_object.on_enter_body()
-                    if self.health - game_object.damage <= 0:
+                    damage = game_object.damage
+                    game_object.is_dead = True
+                    if self.health - damage <= 0:
                         self.character.exp += 10
                         self.is_dead = True
                     else:
-                        self.health -= game_object.damage
+                        self.health -= damage
                         self.sprite = self.damage_sprite
                         threading.Timer(0.1, self.return_normal_sprite).start()
-                    game_object.is_dead = True
 
     def attack(self, other):
         self.reload()
@@ -188,7 +202,7 @@ class Bullet(GameObject):
 
 
 class IceBullet(Bullet):
-    def __init__(self, image_path, cords, target, damage, ice_debuff=1):
+    def __init__(self, image_path, cords, target, damage, ice_debuff):
         super().__init__(image_path, cords, target, damage)
         self.ice_debuff = ice_debuff
 

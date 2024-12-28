@@ -17,8 +17,6 @@ class Camera:
     def draw_objects(self):
         self.offset = self.character.transform.vector - Vector((400, 300))
         self.character.collider_area_attack.draw_collider(self.screen, self.offset)
-        offset = self.character.transform.vector - self.offset
-        self.screen.blit(self.character.sprite, offset.get_cords())
         for i in range(len(self.objects[0:])):
             if isinstance(self.objects[i], Enemy):
                 self.objects[i].collider.draw_collider(self.screen, self.offset)
@@ -31,6 +29,8 @@ class Camera:
                     break
             offset = self.objects[i].transform.vector - self.offset
             self.screen.blit(self.objects[i].sprite, offset.get_cords())
+        offset = self.character.transform.vector - self.offset
+        self.screen.blit(self.character.sprite, offset.get_cords())
 
     def add_objects(self, *obj):
         for i in obj:
