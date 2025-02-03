@@ -26,7 +26,6 @@ class GameObject:
         return self.tag_collision
 
 
-DURATION_BULLET = 1
 DURATION_GOLD_BULLET = 0.05
 DURATION_ICE_BULLET = 3
 
@@ -39,7 +38,7 @@ class Character(GameObject):
         self.damage_goldBullet = 15
         self.damage_iceBullet = 5
         self.cold_resist = 0.1
-
+        self.duration_bullet = 1
         self.controller = Controller()
         self.first_time = time.time()
         self.camera = None
@@ -61,10 +60,16 @@ class Character(GameObject):
         for game_object in objects:
             if game_object.tag_collision == 'enemy':
                 if self.collider_area_attack.on_collider_stay(game_object.collider):
-                    if self.check_reload(DURATION_BULLET):
+                    if self.check_reload(self.duration_bullet):
                         self.shoot(game_object)
                 if self.collider_character.on_collider_stay(game_object.collider):
                     game_object.attack(self)
+            if game_object.tag_collision == 'bullet_enemy':
+                damage = game_object.damage
+                game_object.is_dead = True
+                self.health -= damage
+                print(self.health)
+
 
     def shoot(self, target):
         self.counter += 1
@@ -119,15 +124,14 @@ class Character(GameObject):
         if self.exp == 10:
             pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1))
             self.level += 1
-            print('level up!')
-            if self.level == 2:
+            if self.level == 5:
                 self.can_shoot_gold_bullet = True
             self.exp = 0
 
 
 class Enemy(GameObject):
-    def __init__(self, image_path, cords, character: Character, screen, speed=1, health=100, id=0):
-        super().__init__(cords, 'enemy.png', scale=3, tag_collision='enemy')
+    def __init__(self, image_path, damaged_img, cords, character: Character, screen, speed=1, health=100):
+        super().__init__(cords, image_path, scale=3, tag_collision='enemy')
         self.health = health
         self.can_walk = True
         self.speed = speed
@@ -135,13 +139,12 @@ class Enemy(GameObject):
         self.screen = screen
         self.start_time = time.time()
         self.can_fight = True
-        self.id = id
         # collider
         self.collider = Collider((80, 80), self.transform, offset=(-20, -20))
         # sprite
-        self.damage_sprite = pygame.transform.scale(pygame.image.load('enemy_damage.png').convert_alpha(), (
-            pygame.image.load('enemy_damage.png').convert_alpha().get_width() * self.scale,
-            pygame.image.load('enemy_damage.png').convert_alpha().get_height() * self.scale))
+        self.damage_sprite = pygame.transform.scale(pygame.image.load(damaged_img).convert_alpha(), (
+            pygame.image.load(damaged_img).convert_alpha().get_width() * self.scale,
+            pygame.image.load(damaged_img).convert_alpha().get_height() * self.scale))
 
     def update_collision(self, objects: list[GameObject]):
         for game_object in objects:
@@ -163,7 +166,6 @@ class Enemy(GameObject):
         if self.can_fight:
             other.health -= 10
             self.can_fight = False
-            print(other.health, self.id)
 
     def return_normal_sprite(self):
         self.sprite = self.normal_sprite
@@ -184,8 +186,8 @@ class Enemy(GameObject):
 
 
 class Bullet(GameObject):
-    def __init__(self, image_path, cords, target, damage=50):
-        super().__init__(cords, image_path=image_path, scale=2, tag_collision='bullet')
+    def __init__(self, image_path, cords, target, damage=50, tag='bullet'):
+        super().__init__(cords, image_path=image_path, scale=2, tag_collision=tag)
         self.sprite = pygame.transform.rotate(pygame.image.load(self.image_path).convert_alpha(), 0)
         self.target = target
         self.is_dead = False
@@ -193,9 +195,10 @@ class Bullet(GameObject):
         self.damage = damage
 
     def update_frame(self):
-        self.transform.goto(self.target.transform.vector, 10)
-        if self.target.is_dead:
+        if self.target.is_dead or Transform.dist(self.transform, self.target.transform) < 0.8:
             self.is_dead = True
+        else:
+            self.transform.goto(self.target.transform.vector, 10)
 
     def on_enter_body(self):
         pass
@@ -219,3 +222,44 @@ class IceBullet(Bullet):
 class StaticObject(GameObject):
     def __init__(self, cord, image_path):
         super().__init__(cord, image_path, 1)
+
+
+class EnemyShooters(Enemy):
+    def __init__(self, image_path, damage_img, cords, character, screen, speed, health):
+        super().__init__(image_path, damage_img, cords, character, screen, speed, health)
+        self.camera = None
+
+    def attack(self, other):
+        self.reload()
+        if self.can_fight:
+            print(self.transform.vector.get_cords())
+            bullet = EnemyBullet('assets/bullets/bullet.png', self.transform.vector.get_cords(), self.character, 10)
+            self.camera.add_objects(bullet)
+            self.can_fight = False
+
+    def update_frame(self):
+        vector = self.character.transform.vector
+        if int(self.transform.dist(vector)) < 300:
+            self.can_walk = True
+        elif 600 < int(self.transform.dist(vector)) < 800:
+            self.can_walk = False
+            self.attack(self.character)
+        if self.can_walk:
+            self.transform.goto(Vector((-self.character.transform.vector.x, -self.character.transform.vector.y)),
+                                self.speed)
+        if int(self.transform.dist(vector)) > 800:
+            self.transform.goto(Vector((-self.character.transform.vector.x, -self.character.transform.vector.y)),
+                                self.speed)
+
+
+class EnemyBullet(Bullet):
+    def __init__(self, image_path, cord,target, damage, tag='bullet_enemy'):
+        super().__init__(image_path,cord,target,damage,tag)
+
+
+
+    def update_frame(self):
+        if self.target.is_dead or Transform.dist(self.transform,self.target.transform) < 0.8:
+            self.is_dead = True
+        else:
+            self.transform.goto(self.target.transform.vector, 1)

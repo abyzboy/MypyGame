@@ -44,13 +44,15 @@ class Transform:
         self.vector = Vector(cords)
 
     def dist(self, other):
-        if isinstance(other, Vector):
+        if isinstance(other, Transform):
+            return (other.vector - self.vector).len_vector()
+        elif isinstance(other, Vector):
             return (other - self.vector).len_vector()
 
     def positions(self):
         return self.vector.get_cords()
 
-    def goto(self, other, speed=1):
+    def goto(self, other:Vector, speed=1):
         vector = other - self.vector
         self.vector.x += vector.normalize().x * speed
         self.vector.y += vector.normalize().y * speed
