@@ -1,7 +1,15 @@
-from Scripts.Engine import Transform, Vector, Controller, Collider
-import pygame
-import time
 import threading
+import time
+
+import pygame
+
+from Scripts.Engine import Transform, Vector, Controller, Collider
+
+pygame.mixer.init()
+damage_sound = pygame.mixer.Sound('assets/sounds/minecraft-death-sound.mp3')
+death_sound = pygame.mixer.Sound('assets/sounds/death.mp3')
+blaster_sound = pygame.mixer.Sound('assets/sounds/vyistrel-blastera-v-mejgalakticheskom-prostranstve.mp3')
+stone_sound = pygame.mixer.Sound('assets/sounds/popadanie-tochno-v-tsel.mp3')
 
 
 class GameObject:
@@ -31,8 +39,8 @@ DURATION_ICE_BULLET = 3
 
 
 class Character(GameObject):
-    def __init__(self, cords, speed, screen):
-        super().__init__(cords, 'character.png', scale=3, tag_collision='character')
+    def __init__(self, image_path, damaged_img, cords, speed, screen):
+        super().__init__(cords, image_path, scale=3, tag_collision='character')
         # damage bullets
         self.damage_bullet = 10
         self.damage_goldBullet = 15
@@ -53,8 +61,14 @@ class Character(GameObject):
         self.collider_character = Collider((80, 80), self.transform, offset=(-20, -20))
         # buffs
         self.can_shoot_gold_bullet = False
-
+        self.can_shoot_ice_bullet = False
         self.counter = 0
+        self.max_cords = (-2000, 2000)
+        self.background_offset = Vector(self.transform.vector.get_cords())
+
+        self.damage_sprite = pygame.transform.scale(pygame.image.load(damaged_img).convert_alpha(), (
+            pygame.image.load(damaged_img).convert_alpha().get_width() * self.scale,
+            pygame.image.load(damaged_img).convert_alpha().get_height() * self.scale))
 
     def update_collision(self, objects: list[GameObject]):
         for game_object in objects:
@@ -65,19 +79,30 @@ class Character(GameObject):
                 if self.collider_character.on_collider_stay(game_object.collider):
                     game_object.attack(self)
             if game_object.tag_collision == 'bullet_enemy':
-                damage = game_object.damage
-                game_object.is_dead = True
-                self.health -= damage
-                print(self.health)
+                if self.collider_character.on_collider_stay(game_object.collider):
+                    self.get_damage(game_object.damage)
+                    game_object.is_dead = True
 
+    def get_damage(self, damage):
+        self.sprite = self.damage_sprite
+        threading.Timer(0.1, self.return_normal_sprite).start()
+        self.health -= damage
+        if self.health <= 0:
+            self.health = 0
+            death_sound.play()
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT + 2))
+
+    def return_normal_sprite(self):
+        self.sprite = self.normal_sprite
 
     def shoot(self, target):
         self.counter += 1
         bullet = Bullet('assets/bullets/bullet.png', self.transform.vector.get_cords(), target, self.damage_bullet)
+        stone_sound.play()
         self.camera.add_objects(bullet)
         if self.can_shoot_gold_bullet:
             threading.Timer(DURATION_GOLD_BULLET, self.shoot_gold, args=[target]).start()
-        if self.counter % DURATION_ICE_BULLET == 0 and self.counter >= DURATION_ICE_BULLET:
+        if self.counter % DURATION_ICE_BULLET == 0 and self.counter >= DURATION_ICE_BULLET and self.can_shoot_ice_bullet:
             threading.Timer(0.2, self.shoot_ice, args=[target]).start()
 
     def shoot_gold(self, target):
@@ -104,34 +129,39 @@ class Character(GameObject):
     def move(self):
         keys = pygame.key.get_pressed()
         x, y = 0, 0
-        if keys[self.controller.right]:
+        if keys[self.controller.right] and self.max_cords[1] > self.transform.vector.x:
             x = 1
-        if keys[self.controller.left]:
+        if keys[self.controller.left] and self.max_cords[0] < self.transform.vector.x:
             x = -1
-        if keys[self.controller.down]:
+        if keys[self.controller.down] and self.max_cords[1] > self.transform.vector.y:
             y = 1
-        if keys[self.controller.up]:
+        if keys[self.controller.up] and self.max_cords[0] < self.transform.vector.y:
             y = -1
         vector = Vector((x, y))
         if x and y:
             normalized_vector = vector.normalize()
             self.transform.vector += Vector((normalized_vector.x * self.speed, normalized_vector.y * self.speed))
+            self.background_offset -= Vector((normalized_vector.x * self.speed, normalized_vector.y * self.speed))
         else:
             self.transform.vector += Vector((vector.x * self.speed, vector.y * self.speed))
+            self.background_offset -= Vector((vector.x * self.speed, vector.y * self.speed))
 
     def update_frame(self):
         self.move()
-        if self.exp == 10:
+        if self.exp >= 30:
             pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1))
             self.level += 1
             if self.level == 5:
                 self.can_shoot_gold_bullet = True
+            if self.level == 7:
+                self.can_shoot_ice_bullet = True
             self.exp = 0
 
 
 class Enemy(GameObject):
-    def __init__(self, image_path, damaged_img, cords, character: Character, screen, speed=1, health=100):
+    def __init__(self, image_path, damaged_img, cords, character: Character, screen, speed=1, health=100, damage=1):
         super().__init__(cords, image_path, scale=3, tag_collision='enemy')
+        self.damage = damage
         self.health = health
         self.can_walk = True
         self.speed = speed
@@ -151,10 +181,11 @@ class Enemy(GameObject):
             if game_object.tag_collision == 'bullet':
                 if self.collider.on_collider_stay(game_object.collider):
                     game_object.on_enter_body()
+                    damage_sound.play()
                     damage = game_object.damage
                     game_object.is_dead = True
                     if self.health - damage <= 0:
-                        self.character.exp += 10
+                        self.character.exp += 500
                         self.is_dead = True
                     else:
                         self.health -= damage
@@ -164,7 +195,7 @@ class Enemy(GameObject):
     def attack(self, other):
         self.reload()
         if self.can_fight:
-            other.health -= 10
+            other.get_damage(self.damage)
             self.can_fight = False
 
     def return_normal_sprite(self):
@@ -215,7 +246,6 @@ class IceBullet(Bullet):
         threading.Timer(1, self.return_normal_speed, args=[speed]).start()
 
     def return_normal_speed(self, speed):
-        print(speed)
         self.target.speed = speed
 
 
@@ -225,15 +255,17 @@ class StaticObject(GameObject):
 
 
 class EnemyShooters(Enemy):
-    def __init__(self, image_path, damage_img, cords, character, screen, speed, health):
-        super().__init__(image_path, damage_img, cords, character, screen, speed, health)
-        self.camera = None
+    def __init__(self, image_path, damage_img, cords, character, screen, speed, health, damage):
+        super().__init__(image_path, damage_img, cords, character, screen, speed, health, damage)
+        self.camera = character.camera
+        self.target_walk = Vector((0, 0))
 
     def attack(self, other):
         self.reload()
+        blaster_sound.play()
         if self.can_fight:
-            print(self.transform.vector.get_cords())
-            bullet = EnemyBullet('assets/bullets/bullet.png', self.transform.vector.get_cords(), self.character, 10)
+            bullet = EnemyBullet('assets/bullets/robot_bullet.png', self.transform.vector.get_cords(),
+                                 Vector(self.character.transform.vector.get_cords()), self.damage)
             self.camera.add_objects(bullet)
             self.can_fight = False
 
@@ -241,25 +273,31 @@ class EnemyShooters(Enemy):
         vector = self.character.transform.vector
         if int(self.transform.dist(vector)) < 300:
             self.can_walk = True
-        elif 600 < int(self.transform.dist(vector)) < 800:
-            self.can_walk = False
-            self.attack(self.character)
         if self.can_walk:
-            self.transform.goto(Vector((-self.character.transform.vector.x, -self.character.transform.vector.y)),
-                                self.speed)
-        if int(self.transform.dist(vector)) > 800:
-            self.transform.goto(Vector((-self.character.transform.vector.x, -self.character.transform.vector.y)),
-                                self.speed)
+            if self.transform.vector.x >= self.character.transform.vector.x:
+                self.transform.vector.x += 1 * self.speed
+            else:
+                self.transform.vector.x -= 1 * self.speed
+            if self.transform.vector.y >= self.transform.vector.y:
+                self.transform.vector.y += 1 * self.speed
+            else:
+                self.transform.vector.y -= 1 * self.speed
+        if int(self.transform.dist(vector)) > 550:
+            self.can_walk = False
+        self.attack(self.character)
+
+    def reload(self):
+        if time.time() - self.start_time >= 1.5:
+            self.can_fight = True
+            self.start_time = time.time()
 
 
 class EnemyBullet(Bullet):
-    def __init__(self, image_path, cord,target, damage, tag='bullet_enemy'):
-        super().__init__(image_path,cord,target,damage,tag)
-
-
+    def __init__(self, image_path, cord, target, damage, tag='bullet_enemy'):
+        super().__init__(image_path, cord, target, damage, tag)
 
     def update_frame(self):
-        if self.target.is_dead or Transform.dist(self.transform,self.target.transform) < 0.8:
+        if Transform.dist(self.transform, self.target) < 4:
             self.is_dead = True
         else:
-            self.transform.goto(self.target.transform.vector, 1)
+            self.transform.goto(self.target, 6)

@@ -18,12 +18,16 @@ class Vector:
     def get_cords(self):
         return self.x, self.y
 
+    def dist(self, other):
+        if isinstance(other, Vector):
+            return (other - self).len_vector()
+
     def __add__(self, other):
-        if type(other) == Vector:
+        if isinstance(other, Vector):
             return Vector((self.x + other.x, self.y + other.y))
 
     def __sub__(self, other):
-        if type(other) == Vector:
+        if isinstance(other, Vector):
             return Vector((self.x - other.x, self.y - other.y))
 
     def __le__(self, other):
@@ -52,7 +56,7 @@ class Transform:
     def positions(self):
         return self.vector.get_cords()
 
-    def goto(self, other:Vector, speed=1):
+    def goto(self, other: Vector, speed=1):
         vector = other - self.vector
         self.vector.x += vector.normalize().x * speed
         self.vector.y += vector.normalize().y * speed
@@ -122,3 +126,35 @@ def draw_multiline_text(surface, text, font, position, text_color, outline_color
     for line in lines:
         y_offset += draw_text_with_outline(surface, line, font, (position[0], position[1] + y_offset), text_color,
                                            outline_color, outline_thickness)
+
+
+class ImageDuplicator:
+    def __init__(self, image_path, width, height, screen, character):
+        self.width = width
+        self.height = height
+        self.n = 2
+        self.character = character
+        self.image_orig = pygame.image.load(image_path)
+        self.image_orig_rect = self.image_orig.get_rect()
+        self.image = pygame.transform.scale(self.image_orig,
+                                            (self.image_orig_rect.width * 10, self.image_orig_rect.height * 10))
+        self.image_rect = self.image.get_rect()
+        # Рассчитываем позиции для дубликатов
+        self.spacing = 0  # Расстояние между изображениями
+        self.total_width = self.n * self.image_rect.width + (self.n - 1) * self.spacing
+        self.total_height = self.n * self.image_rect.height + (self.n - 1) * self.spacing
+        self.start_x = (width - self.total_width) // 2
+        self.start_y = (height - self.image_rect.height) // 2
+        self.screen = screen
+
+    def update(self):
+        self.character.background_offset.x %= self.image_rect.width
+        self.character.background_offset.y %= self.image_rect.height
+
+        # Отрисовка фона
+        # Рисуем только те части фона, которые видны на экране
+        for x in range(-self.image_rect.width + int(self.character.background_offset.x), self.width,
+                       self.image_rect.width):
+            for y in range(-self.image_rect.height + int(self.character.background_offset.y), self.height,
+                           self.image_rect.height):
+                self.screen.blit(self.image, (x, y))

@@ -1,7 +1,7 @@
 import pygame
 
-from Scripts.GameObjects import Character
 from Scripts.Engine import draw_text_with_outline, draw_multiline_text
+from Scripts.GameObjects import Character
 
 
 class Buff:
@@ -30,7 +30,7 @@ class BuffSpeed(Buff):
         pygame.draw.rect(screen, (83, 106, 251), (pos[0] - self.offset_button[0], pos[1] - self.offset_button[1],
                                                   self.size_button[0] + self.offset_button[0],
                                                   self.size_button[1] + self.offset_button[1]), 0)
-        draw_text_with_outline(screen, 'Increases speed by 5%', self.font, pos, (117, 162, 200), (0,0,0), 2)
+        draw_text_with_outline(screen, 'Increases speed by 5%', self.font, pos, (117, 162, 200), (0, 0, 0), 2)
 
 
 class BuffDamageBullet(Buff):
@@ -38,14 +38,14 @@ class BuffDamageBullet(Buff):
         super().__init__(character)
 
     def chose(self):
-        self.character.damage_bullet += self.character.damage_bullet * 0.05
+        self.character.damage_bullet += self.character.damage_bullet * 0.10
         print('new damage:', self.character.damage_bullet)
 
     def draw(self, screen, pos):
         pygame.draw.rect(screen, (83, 106, 251), (pos[0] - self.offset_button[0], pos[1] - self.offset_button[1],
                                                   self.size_button[0] + self.offset_button[0],
                                                   self.size_button[1] + self.offset_button[1]), 0)
-        draw_text_with_outline(screen, 'Increases damage by 5%', self.font, pos, (117, 162, 200), (0,0,0), 2)
+        draw_text_with_outline(screen, 'Increases damage by 10%', self.font, pos, (117, 162, 200), (0, 0, 0), 2)
 
 
 class BuffDamageGoldBullet(Buff):
@@ -59,13 +59,16 @@ class BuffDamageGoldBullet(Buff):
         pygame.draw.rect(screen, (83, 106, 251), (pos[0] - self.offset_button[0], pos[1] - self.offset_button[1],
                                                   self.size_button[0] + self.offset_button[0],
                                                   self.size_button[1] + self.offset_button[1]), 0)
-        draw_multiline_text(screen, 'Increases damage\ngold bullets by 2 units', self.font, pos, (117, 162, 200), (0,0,0), 2)
+        draw_multiline_text(screen, 'Increases damage\ngold bullets by 3 units', self.font, pos, (117, 162, 200),
+                            (0, 0, 0), 2)
+
 
 class BuffDurationBullet(Buff):
     def __init__(self, character):
         super().__init__(character)
+
     def chose(self):
-        self.character.duration_bullet = 0.1
+        self.character.duration_bullet = self.character.duration_bullet - (self.character.duration_bullet * 0.1)
 
     def draw(self, screen, pos):
         pygame.draw.rect(screen, (83, 106, 251), (pos[0] - self.offset_button[0], pos[1] - self.offset_button[1],
