@@ -18,37 +18,39 @@ def make_spawn_position(center_pos):
 def spawn(wave, character):
     camera = character.camera
     screen = camera.screen
-    damage_multiply = 5 * 0.3
-    health_multiply = 8 * 0.25
-    speed_multiply = 8 * 0.1
+    damage_multiply = 0.3
+    health_multiply = 0.1
+    speed_multiply = 0.1
     if wave >= 5:
-        damage_multiply = 5 * 0.45
-        health_multiply = 8 * 0.4
-        speed_multiply = 8 * 0.15
+        damage_multiply = 0.45
+        health_multiply = 0.4
+        speed_multiply = 0.15
     if wave >= 10:
-        damage_multiply = 10 * 0.6
-        health_multiply = 11 * 0.5
-        speed_multiply = 15 * 0.4
+        damage_multiply = 0.7
+        health_multiply = 0.5
+        speed_multiply = 0.6
     if wave >= 20:
-        damage_multiply = wave/3 * 0.6
-        health_multiply = wave/3 * 0.5
-        speed_multiply = wave/3* 0.4
+        damage_multiply = wave / 3 * 0.6
+        health_multiply = wave / 3 * 0.5
+        speed_multiply = wave / 3 * 0.4
     center_pos = character.transform.vector.get_cords()
     if wave % 3 == 0:
         for i in range(2):
             cord = make_spawn_position(center_pos)
             enemy = EnemyShooters('assets/enemy/idl_robot.png', 'assets/enemy/damage_robot.png',
-                                  cord, character, screen, 1 + (1 * speed_multiply), 30 + (30 * health_multiply),
-                                  10 + (10 * damage_multiply))
+                                  cord, character, screen, 1 + (1 * speed_multiply), 25 + (30 * health_multiply),
+                                  5 + (7 * damage_multiply))
             camera.add_objects(enemy)
         for i in range(3):
             cord = make_spawn_position(center_pos)
-            enemy = Enemy('assets/enemy/orc.png', 'assets/enemy/damage_orc.png', cord, character, screen, 1 + (1 * speed_multiply),
-                          70 + (70 * health_multiply), 10 + (10 * damage_multiply))
+            enemy = Enemy('assets/enemy/orc.png', 'assets/enemy/damage_orc.png', cord, character, screen,
+                          1 + (1 * speed_multiply),
+                          30 + (70 * health_multiply), 10 + (10 * damage_multiply))
             camera.add_objects(enemy)
     else:
         for i in range(3):
             cord = make_spawn_position(center_pos)
-            enemy = Enemy('assets/enemy/orc.png', 'assets/enemy/damage_orc.png', cord, character, screen, 1 + (1 * speed_multiply),
-                          70 + (70 * health_multiply), 10 + (10 * damage_multiply))
+            enemy = Enemy('assets/enemy/orc.png', 'assets/enemy/damage_orc.png', cord, character, screen,
+                          1 + (1 * speed_multiply),
+                          35 + (70 * health_multiply), 10 + (25 * damage_multiply))
             camera.add_objects(enemy)

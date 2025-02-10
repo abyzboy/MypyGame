@@ -1,11 +1,13 @@
 from random import randint
 
+import pygame.image
+
 from Scripts.Buffs import BuffSpeed, BuffDamageBullet, BuffDamageGoldBullet, BuffDurationBullet
 from Scripts.Camera import Camera
 from Scripts.Engine import FPS, ImageDuplicator
 from Scripts.GameObjects import *
 from Scripts.Spawner import spawn
-from Scripts.UI import check_button_buffs, notification_new_level, draw_health_bar, Button, draw_record
+from Scripts.UI import check_button_buffs, notification_new_level, draw_health_bar, Button, draw_record, draw_logo
 
 pause = 0
 def random_buffs(b):
@@ -33,11 +35,14 @@ def start_game():
 
 
 if __name__ == "__main__":
+    background = pygame.image.load('assets/background.png')
     record = open('assets/max_wave.txt', 'r').readline()
     buttons = [
-        Button(300, 200, 200, 50, "START GAME", (117, 162, 200), (117, 162, 200), start_game)]
+        Button(300, 200, 200, 50, "START GAME", (117, 162, 200), (160, 198, 226), start_game)]
     pygame.init()
     pygame.mixer.init()
+    pygame.display.set_caption('Stone master')
+    pygame.display.set_icon(pygame.image.load('assets/bullets/bullet.png'))
     size = width, height = 800, 600
     screen = pygame.display.set_mode(size)
     pygame.display.flip()
@@ -101,7 +106,7 @@ if __name__ == "__main__":
                     buffs_get[i].draw(screen, pos)
                     pos = pos[0] + buffs_get[i].size_button[0] + buffs_button_offset, pos[1]
             if timer_new_lvl_notification < 3:
-                notification_new_level(screen, (width // 2 - 75, height // 2 - 100))
+                notification_new_level(screen, (width // 2 - 100, height // 2 - 200))
                 timer_new_lvl_notification += 1 / FPS
             draw_health_bar(character.health, screen)
         else:
@@ -116,7 +121,9 @@ if __name__ == "__main__":
                 button.check_hover(mouse_pos)
 
             screen.fill('black')
-            draw_record(250, 100, screen, record)
+            screen.blit(background, (0, 0))
+            draw_logo(250, 0, screen)
+            draw_record(250, 300, screen, record)
             for button in buttons:
                 button.draw(screen)
             pygame.display.flip()

@@ -153,7 +153,7 @@ class Character(GameObject):
             self.level += 1
             if self.level == 5:
                 self.can_shoot_gold_bullet = True
-            if self.level == 7:
+            if self.level == 8:
                 self.can_shoot_ice_bullet = True
             self.exp = 0
 
@@ -185,7 +185,7 @@ class Enemy(GameObject):
                     damage = game_object.damage
                     game_object.is_dead = True
                     if self.health - damage <= 0:
-                        self.character.exp += 500
+                        self.character.exp += 15
                         self.is_dead = True
                     else:
                         self.health -= damage

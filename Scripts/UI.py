@@ -21,8 +21,8 @@ def check_button_buffs(event, buffs, buffs_pos, buffs_get, buffs_button_offset):
 
 
 def notification_new_level(screen, pos):
-    font = pygame.font.Font('assets/fonts/HarryPotterKudosEN-en.ttf', 30)
-    draw_multiline_text(screen, 'level up', font, pos, (117, 162, 200), (0, 0, 0), 4)
+    font = pygame.font.Font('assets/fonts/HarryPotterKudosEN-en.ttf', 50)
+    draw_multiline_text(screen, 'Level Up!', font, pos, (117, 162, 200), (0, 0, 0), 4)
 
 
 def draw_health_bar(health, screen):
@@ -32,7 +32,12 @@ def draw_health_bar(health, screen):
 
 def draw_record(x_pos, y_pos, screen, wave):
     font = pygame.font.Font('assets/fonts/HarryPotterKudosEN-en.ttf', 30)
-    draw_multiline_text(screen, f'Max wave survived: {wave}', font, (x_pos, y_pos), (0, 0, 0), (117, 162, 200), 4)
+    draw_multiline_text(screen, f'Max wave survived: {wave}', font, (x_pos, y_pos), (255, 255, 255), (117, 162, 200), 4)
+
+
+def draw_logo(x_pos, y_pos, screen):
+    font = pygame.font.Font('assets/fonts/HarryPotterKudosEN-en.ttf', 100)
+    draw_multiline_text(screen, f' Stone\nMaster', font, (x_pos, y_pos), (255, 255, 255), (117, 162, 200), 4)
 
 
 class Button:
@@ -51,7 +56,7 @@ class Button:
 
         # Отрисовка текста
         font = pygame.font.Font('assets/fonts/HarryPotterKudosEN-en.ttf', 30)
-        text_surface = font.render(self.text, True, (0, 0, 0))
+        text_surface = font.render(self.text, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
